@@ -1,0 +1,35 @@
+# Build / Publish
+bin/
+obj/
+wwwroot/
+Debug/
+Release/
+dist
+*.user
+*.suo
+*.cache
+*.pdb
+*.mdb
+
+# Visual Studio / VS Code
+.vscode/
+*.vs/
+*.userprefs
+
+# ASP.NET / Blazor
+wwwroot/*-scoped.css
+wwwroot/css/generated/
+appsettings.Local.json
+
+# Logs
+*.log
+
+# Secrets
+*.secret.json
+
+# Rider
+.idea/
+
+# Temp files
+*.tmp
+*.temp
