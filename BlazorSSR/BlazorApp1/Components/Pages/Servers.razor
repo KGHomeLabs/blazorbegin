@@ -1,0 +1,41 @@
+﻿@page "/servers"
+@using BlazorApp1.Services
+@using BlazorApp1.Services.Models
+
+
+<h3>Servers</h3>
+<br />
+<div class="continainer-fluid text-center">
+    <div class="row w-50">
+        @foreach (var city in cities)
+        {
+            <div class="card col">
+                <img class="card-img-top" src="@($"images/{city}.png")" alt="...">
+                <div class="card-body">
+                      <button type="button" class="btn btn-primary">@city</button>
+                </div>
+            </div>            
+        }
+    </div>
+</div>
+
+<br />
+<br />
+<ul>
+    @foreach(var server in servers)
+    {
+        <li>
+            <b>@server.Name</b> in <i>@server.City</i> and is 
+            <span style="color:@(server.IsOnline ? "blue" : "red")">  
+                @(server.IsOnline ? "online" : "offline")
+            </span>
+            &nbsp;
+            <a href="@($"servers/edit")" class="btn btn-link">edit @server.Id</a>
+        </li>
+    }
+</ul>
+
+@code {
+    private List<Server> servers = ServerRepository.GetServersByCity("Toronto");
+    private List<string> cities = Cities.GetCities();
+}

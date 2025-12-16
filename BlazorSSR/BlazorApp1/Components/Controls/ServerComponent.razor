@@ -1,0 +1,10 @@
+﻿@using BlazorApp1.Services.Models
+<p style="color:@(server.IsOnline ? "blue" : "red")">
+    @server.Name is located in @server.City @(server.IsOnline ? "online" : "offline").
+    
+
+</p>
+
+@code {
+    private Server server = new Server { Name = "Goofy", City = "Basmati" };
+}
