@@ -2,6 +2,7 @@
 @using BlazorApp1.Services
 @using BlazorApp1.Services.Models
 
+@inject NavigationManager NavigationManager
 
 <h3>Servers</h3>
 <br />
@@ -30,15 +31,31 @@
                 @(server.IsOnline ? "online" : "offline")
             </span>
             &nbsp;
-            <a href="@($"servers/{server.Id}")" class="btn btn-link">edit @server.Id</a>
+            <a href="@($"servers/{server.Id}")" class="btn btn-primary">edit @server.Id</a>
+            &nbsp;
+            <EditForm 
+                Model="server" 
+                FormName ="@($"formServer{server.Id}")"
+                OnValidSubmit="@(()=>{DeleteServer(server.Id);})">
+                
+                <button type="submit" class="btn btn-primary">Delete</button>
+            </EditForm>
+            
         </li>
     }
 </ul>
+<a href="@($"servers/add")" class="btn btn-primary">Add Server</a>
+&nbsp;
 
 @code {
     private List<Server> servers = ServerRepository.GetServersByCity("Toronto");
     private List<string> cities = Cities.GetCities();
 
-   
-    
+    private void DeleteServer(int id)
+    {
+        if (id <= 0) return;
+        ServerRepository.DeleteServer(id);
+        NavigationManager.Refresh();
+        //or re-navigate to the same page
+    }
 }
