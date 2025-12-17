@@ -30,7 +30,7 @@
                 @(server.IsOnline ? "online" : "offline")
             </span>
             &nbsp;
-            <a href="@($"servers/edit")" class="btn btn-link">edit @server.Id</a>
+            <a href="@($"servers/{server.Id}")" class="btn btn-link">edit @server.Id</a>
         </li>
     }
 </ul>
@@ -38,4 +38,7 @@
 @code {
     private List<Server> servers = ServerRepository.GetServersByCity("Toronto");
     private List<string> cities = Cities.GetCities();
+
+   
+    
 }
