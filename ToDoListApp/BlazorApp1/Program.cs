@@ -10,8 +10,7 @@ namespace BlazorApp1
 
             // Add services to the container.
             builder.Services.AddRazorComponents()
-                            .AddInteractiveServerComponents();
-            
+                .AddInteractiveServerComponents();
 
             var app = builder.Build();
 
@@ -30,7 +29,7 @@ namespace BlazorApp1
 
             app.MapStaticAssets();
             app.MapRazorComponents<App>()
-               .AddInteractiveServerRenderMode();
+                .AddInteractiveServerRenderMode();
 
             app.Run();
         }

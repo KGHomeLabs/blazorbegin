@@ -1,0 +1,94 @@
+﻿@page "/"
+@using BlazorApp1.Services
+@using BlazorApp1.Services.Models
+
+@rendermode InteractiveServer
+
+<PageTitle>Task Manager</PageTitle>
+
+<button type="button" class="btn btn-primary" 
+        @onclick="AddTask">
+        Add Task
+</button>
+
+<br />
+@* Input area for adding a task *@
+
+<div>
+
+
+</div>
+
+<h1>Tasks:</h1>
+@if (tasks != null)
+{
+    <div class="container">
+        @* Tasklist *@
+        <ul class="list-unstyled">
+                @foreach (var todo in tasks)
+                {
+                    <li @key="todo.Id">
+                        <div class="row mb-2">
+                            <div class="col-1">                                
+                                @* checkbox *@
+                                <input type="checkbox" class="form-check-input" 
+                                        @bind-value="todo.IsDone" 
+                                        checked="@todo.IsDone"
+                                        style="vertical-align:middle"/>
+                            </div>
+                            <div class="col-1">
+                                @* Display ID *@
+                                <span class="input-group-text"
+                                        id="addon-wrapping" 
+                                        style="vertical-align:middle">
+                                    @todo.Id
+                                </span>
+                            </div>
+                            <div class="col-6">
+                                @* Description Input *@
+                                @if(todo.IsDone)
+                                {
+                                     <input type="text" 
+                                            class="form-control text-decoration-line-through"
+                                            placeholder="Task Description" 
+                                            aria-label="Task Description" 
+                                            aria-describedby="addon-wrapping" 
+                                            @bind-value="@todo.Description" 
+                                            style="vertical-align:middle" 
+                                            disabled/>                                                          
+                                } else 
+                                {
+                                     <input type="text" class="form-control"
+                                            placeholder="Task Description" 
+                                            aria-label="Task Description" 
+                                            aria-describedby="addon-wrapping" 
+                                            @bind-value="@todo.Description" 
+                                            style="vertical-align:middle" />                                                          
+                                    
+                                }
+                            </div>
+                            <div class="col-4"
+                                 style="vertical-align:middle">
+                                @if(todo.IsDone)
+                                {
+                                    <text>Completed on @todo.CompletionDate </text>
+                                }
+                            </div>                        
+                        </div>
+                    </li>
+                }
+            </ul>
+    </div>
+}
+
+@code {
+    private List<TodoItem> tasks = TodoService.GetAllTasks();
+
+    private void AddTask(MouseEventArgs args)
+    {
+        TodoService.AddTask(new TodoItem() { Description = "huhu" });
+        tasks = TodoService.GetAllTasks();
+    }
+}
+
+

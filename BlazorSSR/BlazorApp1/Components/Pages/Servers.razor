@@ -1,25 +1,39 @@
 ﻿@page "/servers"
 @using BlazorApp1.Services
 @using BlazorApp1.Services.Models
-
+@rendermode InteractiveServer
 @inject NavigationManager NavigationManager
 
 <h3>Servers</h3>
 <br />
 <div class="continainer-fluid text-center">
-    <div class="row w-50">
+    <div class="row w-30">
         @foreach (var city in cities)
         {
-            <div class="card col">
-                <img class="card-img-top" src="@($"images/{city}.png")" alt="...">
-                <div class="card-body">
-                      <button type="button" class="btn btn-primary">@city</button>
-                </div>
-            </div>            
+            <div class="col">
+                <div class="card @(selectedCity.Equals(city, StringComparison.OrdinalIgnoreCase) ? "border-primary":"")">
+                    <img class="card-img-top" src="@($"images/{city}.png")" alt="...">
+                    <div class="card-body">
+                          <button type="button" class="btn btn-primary" 
+                                @onclick="@(() => { SelectCity(city); })">                            
+                            @city
+                           </button>
+                    </div>
+                </div>            
+            </div>
         }
     </div>
 </div>
+<br />
+<div class="input-group mb-3">
+    <input type="text" class="form-control" placeholder="huhu" @bind-value ="searchFilter"/>
+    <button class="btn btn-outline-secondary" type="button" id="btnSearch"
+            @onclick="SearchClick">Search</button>
+</div>
 
+<p> Servers for @selectedCity</p>
+<br />
+    <ServerComponent @rendermode="InteractiveServer"></ServerComponent>
 <br />
 <br />
 <ul>
@@ -51,11 +65,29 @@
     private List<Server> servers = ServerRepository.GetServersByCity("Toronto");
     private List<string> cities = Cities.GetCities();
 
+    private string selectedCity = "Toronto";
+
+
+    private string searchFilter { get; set; } = string.Empty;
+
     private void DeleteServer(int id)
     {
         if (id <= 0) return;
         ServerRepository.DeleteServer(id);
         NavigationManager.Refresh();
         //or re-navigate to the same page
+    }
+    private void SelectCity(string cityName)
+    {
+        selectedCity = cityName;  
+        searchFilter = String.Empty;
+        servers = ServerRepository.GetServersByCity(selectedCity);
+    }
+
+    private void SearchClick(MouseEventArgs args)
+    {
+        selectedCity = String.Empty;
+       
+        this.servers = ServerRepository.SearchServers(searchFilter);
     }
 }
