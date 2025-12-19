@@ -1,16 +1,24 @@
 ﻿<div class="input-group mb-3">
-    <input type="text" class="form-control" placeholder="huhu" @bind-value="searchFilter" />
-    <button class="btn btn-outline-secondary" type="button" id="btnSearch"
+    <input type="text" class="form-control" 
+           placeholder="huhu" 
+           @bind-value="searchFilter"
+           @bind-value:event="oninput"/>
+   
+    <button id="btnSearch"
+            type="button" class="btn btn-outline-secondary" 
             @onclick="SearchClick">
         Search
     </button>
 </div>
 
 @code {
-    public string searchFilter { get; set; }
+    [Parameter]
+    public EventCallback<string> SearchFilterCallback { get; set; }
 
-    private void SearchClick(MouseEventArgs args)
+    private string searchFilter = string.Empty;
+
+    private void SearchClick()
     {
-        throw new NotImplementedException();
+        SearchFilterCallback.InvokeAsync(searchFilter);
     }
 }

@@ -19,14 +19,20 @@
     [Parameter]
     public string? City { get; set; }
 
+    [Parameter]
+    public string SearchFilter { get; set; } = String.Empty;
+
     private List<Server> servers = ServerRepository.GetServersByCity("Toronto");
 
     override protected void OnParametersSet()
     {
-        if (!string.IsNullOrEmpty(City))
+        if (string.IsNullOrWhiteSpace(this.SearchFilter))
         {
-            servers = ServerRepository.GetServersByCity(City);
+            servers = ServerRepository.GetServersByCity(City ?? "Toronto");
+        }
+        else
+        {
+            servers = ServerRepository.SearchServers(SearchFilter);
         }
     }
-
 }
