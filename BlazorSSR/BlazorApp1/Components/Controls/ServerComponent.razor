@@ -1,4 +1,7 @@
-﻿@using BlazorApp1.Services.Models
+﻿@using BlazorApp1.Services
+@using BlazorApp1.Services.Models
+
+@inject NavigationManager NavigationManager
 
 @if(server == null)
 {
@@ -6,22 +9,38 @@
 }
 else
 {
-    <div data-name="@server.Name"
-         data-status="Server is @(server.IsOnline ? "online" : "offline")"
-         style="color:@(server.IsOnline ? "blue" : "red")">
-           
-         @server.Name is located in @server.City @(server.IsOnline ? "online" : "offline")
-          &nbsp;
-        <button type="submit" class="btn btn-primary"
-                @onclick="ChangeStatus">Turn On/Off</button>
-    </div>
+    <div>
+        <b>@server.Name</b> in <i>@server.City</i> and is
+            <span style="color:@(server.IsOnline ? "blue" : "red")">
+                @(server.IsOnline ? "online" : "offline")
+            </span>
+        &nbsp;
+        <a href="@($"servers/{server.Id}")" class="btn btn-primary">edit @server.Id</a>
+        &nbsp;
+        <EditForm Model="server"
+                    FormName="@($"formServer{server.Id}")"
+                    OnValidSubmit="@(()=>{DeleteServer(server.Id);})">
+
+            <button type="submit" class="btn btn-primary">Delete</button>
+        </EditForm>
+     </div>
 }
 
 @code {
-    private Server server = new Server { Name = "Goofy", City = "Basmati" };
+    [Parameter]
+    public Server? Server { get; set; }
 
-    private void ChangeStatus()
+    private Server? server;
+
+    protected override void OnParametersSet()
     {
-        server.IsOnline = !server.IsOnline;
+        server = Server;
+    }
+
+    private void DeleteServer(int id)
+    {
+        if (id <= 0) return;
+        ServerRepository.DeleteServer(id);
+        NavigationManager.NavigateTo("/servers", forceLoad: true);
     }
 }

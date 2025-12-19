@@ -1,0 +1,32 @@
+﻿@using BlazorApp1.Services
+@using BlazorApp1.Services.Models
+
+@inject NavigationManager NavigationManager
+
+<h3>ServerList</h3>
+
+<ul>
+    @foreach (var server in servers)
+    {
+        <li @key="server.Id">
+            <ServerComponent @rendermode="InteractiveServer" Server="server"/>
+        </li>
+    }
+</ul>
+
+@code {
+
+    [Parameter]
+    public string? City { get; set; }
+
+    private List<Server> servers = ServerRepository.GetServersByCity("Toronto");
+
+    override protected void OnParametersSet()
+    {
+        if (!string.IsNullOrEmpty(City))
+        {
+            servers = ServerRepository.GetServersByCity(City);
+        }
+    }
+
+}

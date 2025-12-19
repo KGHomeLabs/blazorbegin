@@ -1,0 +1,16 @@
+﻿<div class="input-group mb-3">
+    <input type="text" class="form-control" placeholder="huhu" @bind-value="searchFilter" />
+    <button class="btn btn-outline-secondary" type="button" id="btnSearch"
+            @onclick="SearchClick">
+        Search
+    </button>
+</div>
+
+@code {
+    public string searchFilter { get; set; }
+
+    private void SearchClick(MouseEventArgs args)
+    {
+        throw new NotImplementedException();
+    }
+}

@@ -1,0 +1,32 @@
+﻿@using BlazorApp1.Services
+
+
+
+<div class="continainer-fluid text-center">
+    <div class="row w-30">
+        @foreach (var city in cities)
+        {
+            <div class="col">
+                <CityComponent City="@city" 
+                               SelectedCity="@selectedCity" 
+                               SelectedCityCallback="HandleCitySelection" />
+            </div>
+        }
+    </div>
+</div>
+
+@code {
+
+    [Parameter]
+    public EventCallback<string> SelectedCityCallback { get; set; }
+
+    private List<string> cities = Cities.GetCities();
+
+    private string selectedCity = "Toronto";
+
+    private void HandleCitySelection(string cityName)
+    {
+        selectedCity = cityName;
+        SelectedCityCallback.InvokeAsync(cityName);
+    }
+}
