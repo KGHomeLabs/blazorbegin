@@ -12,14 +12,13 @@
 
 @code {
     [Parameter]
-    public string SelectedCity { get; set; } = "Toronto";
+    public string SelectedCity { get; set; }
 
     [Parameter]
     public string City { get; set; } = String.Empty;
 
     [Parameter]
     public EventCallback<string> SelectedCityCallback { get; set; }
-
 
     private void SelectCity(string cityName)
     {

@@ -1,4 +1,5 @@
 ﻿@page "/servers/{id:int}"
+@using BlazorApp1.Components.Controls.Generic
 @using BlazorApp1.Services
 @using BlazorApp1.Services.Models
 
@@ -18,30 +19,29 @@ else
         <ValidationSummary/>
 
         <InputNumber @bind-Value="server.Id" class="form-control" hidden />
-        <div class="row mb-3">
-            <div class="col-2">
-                <label class="col-form-label">Name</label>
-            </div>
-            <div class="col-6">
-                <InputText @bind-Value="server.Name" class="form-control" />
-            </div>
-        </div>
-        <div class="row mb-3">
-            <div class="col-2">
-                <label class="col-form-label">City</label>
-            </div>
-            <div class="col-6">
-                <InputText @bind-Value="server.City" class="form-control" />
-            </div>
-        </div>
-        <div class="row mb-3">
-            <div class="col-2">
-                <label class="col-form-label">Status</label>
-            </div>
-            <div class="col-6">
+        <FieldComponent Label="Name">
+            <WhateverControl>
+                <InputText @bind-Value="server.Name" class="form-control " />
+            </WhateverControl>
+            <MyValidationMessage>
+                <ValidationMessage For="@(() => server.Name)" />
+            </MyValidationMessage>
+        </FieldComponent>
+
+        <FieldComponent Label="City">
+            <WhateverControl>
+                <InputText @bind-Value="server.City" class="form-control " />
+            </WhateverControl>
+            <MyValidationMessage>
+                <ValidationMessage For="@(() => server.City)" />
+            </MyValidationMessage>
+        </FieldComponent>
+
+        <FieldComponent Label="Status">
+            <WhateverControl>
                 <InputCheckbox @bind-Value="server.IsOnline" class="form-check-input" />
-            </div>
-        </div>
+            </WhateverControl>          
+        </FieldComponent>        
         <br/>
         <button type="submit" class="btn btn-primary">Save</button>
         &nbsp;

@@ -6,20 +6,20 @@
 
 <h3>Servers</h3>
 <br />
-@* Displays a list of cities to filter servers by city *@
-<CityListComponent @rendermode="InteractiveServer" 
-                    SelectedCityCallback="HandleCitySelection"/>
+
+<CityListComponent @ref="cityListComponent"
+                   SelectedCityCallback="HandleCitySelection"/>
 <br />
-@* Lets user search for a server Name *@
-<ServerSearchBarComponent @rendermode="InteractiveServer" 
-                            SearchFilterCallback="HandleSearchFilterChange"/>
+
+<ServerSearchBarComponent SearchFilterCallback="HandleSearchFilterChange"/>
 <br />
 <p> Servers for @selectedCity</p>
 <br />
-@* Displays a list of servers for a speciffic city or search filter (tbd) *@
-<ServerListComponent @rendermode="InteractiveServer" 
-                    City="@selectedCity"
-                     SearchFilter="@searchFilter" />
+<CascadingValue Name="SelectedCity" Value="@selectedCity">
+    <ServerListComponent City="@selectedCity"
+                         SearchFilter="@searchFilter" />
+</CascadingValue>
+
 <br />
 <br />
 <a href="@($"servers/add")" class="btn btn-primary">Add Server</a>
@@ -28,6 +28,8 @@
     private string selectedCity { get; set; } = "Toronto";
 
     private string searchFilter { get; set; } = String.Empty;
+
+    private CityListComponent? cityListComponent;
 
     private void HandleCitySelection(string cityName)
     { 
@@ -38,5 +40,6 @@
     private void HandleSearchFilterChange(string searchFilter)
     {
         this.searchFilter = searchFilter;
+        cityListComponent?.ClearSelection();
     }
 }
