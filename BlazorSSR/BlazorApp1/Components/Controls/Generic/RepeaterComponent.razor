@@ -1,0 +1,25 @@
+﻿@typeparam TRepeaterItems
+
+@HeaderTemplate
+@if(Items is not null && Items.Count > 0)
+{    
+    @foreach (var item in Items)
+    {
+        @RowTemplate(item)
+    }
+}
+@FooterTemplate
+
+
+@code {
+    [Parameter]
+    public List<TRepeaterItems>? Items { get; set; }
+
+    [Parameter]
+    public RenderFragment<TRepeaterItems>? RowTemplate { get; set; }
+
+    [Parameter]
+    public RenderFragment? HeaderTemplate { get; set; }
+    [Parameter]
+    public RenderFragment? FooterTemplate { get; set; }
+}

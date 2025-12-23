@@ -1,18 +1,17 @@
-﻿@using BlazorApp1.Services
+﻿@using BlazorApp1.Components.Controls.Generic
+@using BlazorApp1.Services
 @using BlazorApp1.Services.Models
 
 @inject NavigationManager NavigationManager
 
-<h3>ServerList</h3>
-
-<ul>
-    @foreach (var server in servers)
-    {
-        <li @key="server.Id">
-            <ServerComponent @rendermode="InteractiveServer" Server="server"/>
-        </li>
-    }
-</ul>
+<RepeaterComponent Items="this.servers">
+    <HeaderTemplate>
+        <h4>Servers in @City</h4>  @*here this should be nixed when search is done *@
+    </HeaderTemplate>
+    <RowTemplate Context="server">
+        <ServerComponent Server="server" />
+    </RowTemplate>
+</RepeaterComponent>
 
 @code {
 

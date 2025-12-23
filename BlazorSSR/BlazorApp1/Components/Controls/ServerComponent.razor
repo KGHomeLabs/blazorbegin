@@ -9,50 +9,51 @@
 }
 else
 {
-    <div style="background-color:@GetBackgroundColor()">
-        <b>@server.Name</b> in <i>@server.City</i> and is
-            <span style="color:@(server.IsOnline ? "blue" : "red")">
-                @(server.IsOnline ? "online" : "offline")
-            </span>
-        &nbsp;
-        @if (server.IsOnline)
-        {
-            <button type="button"
-                    class="btn btn-outline-danger"
-                    @onclick="ToggleStatus">
-                Turn Off
-            </button>
-        }
-        else
-        {
-            <button type="button"
-                    class="btn btn-outline-success"
-                    @onclick="ToggleStatus">
-                Turn On
-            </button>
-        }
-        &nbsp;
-        @if (server.IsOnline)
-        {
-            Random rand = new Random();
-            int people = rand.Next(0, 500);
-            <text>@people</text>
-        }
-        else
-        {
-            <text>N/A</text>
-        }
-        &nbsp;
-        <a href="@($"servers/{server.Id}")" class="btn btn-primary">edit @server.Id</a>
-        &nbsp;
-        <EditForm Model="server"
-                    FormName="@($"formServer{server.Id}")"
-                    OnValidSubmit="@(()=>{DeleteServer(server.Id);})">
+    <li @key="server.Id">
+        <div style="background-color:@GetBackgroundColor()">
+            <b>@server.Name</b> in <i>@server.City</i> and is
+                <span style="color:@(server.IsOnline ? "blue" : "red")">
+                    @(server.IsOnline ? "online" : "offline")
+                </span>
+            &nbsp;
+            @if (server.IsOnline)
+            {
+                <button type="button"
+                        class="btn btn-outline-danger"
+                        @onclick="ToggleStatus">
+                    Turn Off
+                </button>
+            }
+            else
+            {
+                <button type="button"
+                        class="btn btn-outline-success"
+                        @onclick="ToggleStatus">
+                    Turn On
+                </button>
+            }
+            &nbsp;
+            @if (server.IsOnline)
+            {
+                Random rand = new Random();
+                int people = rand.Next(0, 500);
+                <text>@people</text>
+            }
+            else
+            {
+                <text>N/A</text>
+            }
+            &nbsp;
+            <a href="@($"servers/{server.Id}")" class="btn btn-primary">edit @server.Id</a>
+            &nbsp;
+            <EditForm Model="server"
+                        FormName="@($"formServer{server.Id}")"
+                        OnValidSubmit="@(()=>{DeleteServer(server.Id);})">
 
-            <button type="submit" class="btn btn-primary">Delete</button>
-        </EditForm>
-     </div>
-
+                <button type="submit" class="btn btn-primary">Delete</button>
+            </EditForm>
+         </div>
+    </li>
 }
 
 @code {

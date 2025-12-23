@@ -1,6 +1,6 @@
-﻿@using BlazorApp1.Services
+﻿
 
-
+@using BlazorApp1.Services
 
 <div class="continainer-fluid text-center">
     <div class="row w-30">
@@ -19,8 +19,20 @@
 
 @code {
 
+    private EventCallback<string> _selectedCityCallback;
+
     [Parameter]
-    public EventCallback<string> SelectedCityCallback { get; set; }
+    public EventCallback<string> SelectedCityCallback {
+        get
+        {
+            return _selectedCityCallback;
+        }  
+        set
+        {
+            Console.WriteLine($"Calling: Instantiating");
+            _selectedCityCallback = value;            
+        }
+    }
 
     public void ClearSelection()
     {
@@ -36,5 +48,24 @@
     {
         selectedCity = cityName;
         SelectedCityCallback.InvokeAsync(cityName);
+    }
+
+    override protected void OnParametersSet()
+    {
+        Console.WriteLine($"Calling: OnParametersSet");
+    }
+    override protected void OnInitialized()
+    {
+        Console.WriteLine($"Calling: OnInitialized");
+    }
+    override protected void OnAfterRender(bool firstRender)
+    {
+        Console.WriteLine($"Calling: OnAfterRender - firstRender: {firstRender}");
+    }
+
+    protected override bool ShouldRender()
+    {
+        Console.WriteLine($"Calling: ShouldRender");
+        return base.ShouldRender();
     }
 }
