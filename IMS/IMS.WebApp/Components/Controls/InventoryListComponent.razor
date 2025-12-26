@@ -1,5 +1,6 @@
 ﻿@using IMS.CoreBusiness
 @using IMS.UseCases.Inventories
+@using IMS.UseCases.Inventories.Interfaces
 
 @inject IViewInventoriesByNameUseCase ViewInventoriesByNameUseCase;
 
@@ -9,6 +10,7 @@
             <th>Inventory Name</th>
             <th>Quantity</th>
             <th>Price</th>
+            <th></th>
             <th></th>
         </tr>
     </thead>
@@ -24,10 +26,14 @@
 </table>
 
 @code {
+
+    [Parameter]
+    public string? SearchInventoryFilter { get; set; }
+
     private List<Inventory>? inventories;
 
-    protected override async Task OnInitializedAsync()
+    protected override  async Task  OnParametersSetAsync()
     {
-        inventories = (await ViewInventoriesByNameUseCase.ExecuteAsync()).ToList();
+        inventories = (await ViewInventoriesByNameUseCase.ExecuteAsync(SearchInventoryFilter??string.Empty)).ToList();
     }
 }

@@ -1,4 +1,7 @@
 ﻿@using IMS.CoreBusiness
+@using IMS.UseCases.Inventories.Interfaces
+
+@inject IDeleteInventoryUseCase DeleteUseCase
 
 @if (Inventory is not null)
 {
@@ -7,18 +10,44 @@
         <td>@Inventory.Quantity</td>
         <td>@Inventory.Price.ToString("c")</td>
         <td>
-            <button type="button"
-            class="btn btn-light">
+            <a class="btn btn-light"
+               href="/editinventory/@Inventory.InventoryId">
                 Edit
-            </button>
+            </a>
+
+        </td>
+        <td>
+            <EditForm  
+                EditContext="_editContext"
+                Enhance = "true"    
+                FormName="@($"deleteForm-{Inventory!.InventoryId}")" 
+                OnSubmit="Delete"> 
+                
+                    <button class="btn btn-outline-danger" type="submit">Delete</button>
+            </EditForm>
         </td>
     </tr>
 }
 
 
 @code {
+
     [Parameter]
     public Inventory? Inventory { get; set; }
 
+    private async Task Delete()
+    {
+        if (Inventory is null) return;
+        await DeleteUseCase.ExecuteAsync(Inventory.InventoryId);
+    }
+    
+    private EditContext? _editContext;
 
+    protected override void OnParametersSet()
+    {
+        if (Inventory is not null && _editContext is null)
+        {
+            _editContext = new EditContext(Inventory);
+        }
+    }
 }

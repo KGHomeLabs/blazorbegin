@@ -1,14 +1,20 @@
 ﻿@page "/inventories"
 
-
 <h3>Inventory List</h3>
 <br />
 <br />
-
-<InventoryListComponent>
-
-</InventoryListComponent>
+<SearchComponent OnSearch="HandleSearch" />
+<br />
+<InventoryListComponent SearchInventoryFilter="@inventoryNameToSearch"/>
+<br />
+<br />
+<a href="/inventories/add" class="btn btn-primary">Add</a>
 
 @code {
+    private string? inventoryNameToSearch;
 
+    private void HandleSearch(string searchFilter)
+    {
+        inventoryNameToSearch = searchFilter;
+    }
 }
