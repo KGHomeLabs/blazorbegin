@@ -9,7 +9,9 @@ namespace IMS.Plugins.InMemory
     public class ProductRepository : IProductRepository
     {
         private readonly List<Product> _products;
-        public ProductRepository()
+        private readonly IInventoryRepository inventoryRepo;
+
+        public ProductRepository(IInventoryRepository inventoryRepo)
         {
             _products = new List<Product>()
             {
@@ -17,6 +19,7 @@ namespace IMS.Plugins.InMemory
                 new Product{ Id = 2, Name = "Car", Price = 20000.00, Quantity = 10 }
                 
             };
+            this.inventoryRepo = inventoryRepo;
         }
 
         public Task AddProductAsync(Product product)
@@ -43,7 +46,48 @@ namespace IMS.Plugins.InMemory
         public async Task<Product?> GetProductByIdAsync(int productId)
         {
             var foundProduct = _products.FirstOrDefault(item => item.Id == productId);
-            return await Task.FromResult(foundProduct);
+            Product? newProd = null;
+            if(foundProduct != null)
+            {
+                newProd = new Product();
+                newProd.Id = productId;
+                newProd.Name = foundProduct.Name;
+                newProd.Price = foundProduct.Price;
+                newProd.Quantity = foundProduct.Quantity;
+                newProd.ProductInventories = new List<ProductInventory>();
+                if(foundProduct.ProductInventories != null &&
+                   foundProduct.ProductInventories.Count >0 )
+                {
+                    foreach(var inv in foundProduct.ProductInventories)
+                    {
+                        var newInv = new ProductInventory
+                        {
+                            InventoryId = inv.InventoryId,
+                            ProductId = inv.ProductId,
+                            Product = foundProduct,
+                            Inventory = new Inventory(),
+                            InventoryQuantity =inv.InventoryQuantity
+                            
+                        };
+                        
+                        if(inv.Inventory != null)
+                        {
+                            var currentInventory = await inventoryRepo.GetInventoryByIdAsync(inv.Inventory.InventoryId);
+                            if (currentInventory != null)
+                            {
+                                newInv.Inventory.InventoryId = currentInventory.InventoryId;
+                                newInv.Inventory.InventoryName = currentInventory.InventoryName;
+                                newInv.Inventory.Price = currentInventory.Price;
+                                newInv.Inventory.Quantity = currentInventory.Quantity;
+                            }
+                        }
+
+                        newProd.ProductInventories.Add(newInv);
+                    }
+                }
+
+            }
+            return await Task.FromResult(newProd);
         }
 
         public Task RemoveAsync(int productId)
@@ -72,6 +116,7 @@ namespace IMS.Plugins.InMemory
                 item.Name = product.Name;
                 item.Price = product.Price;
                 item.Quantity = product.Quantity;
+                item.ProductInventories = product.ProductInventories;
             }
             return Task.CompletedTask;
         }

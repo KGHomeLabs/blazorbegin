@@ -1,0 +1,92 @@
+﻿@page "/purchase"
+@using IMS.CoreBusiness
+@using IMS.UseCases.Activeties.Interfaces
+@using IMS.UseCases.Inventories.Interfaces
+@using IMS.WebApp.Components.Controls.Common
+@using IMS.WebApp.ViewModels
+
+@inject IViewInventoriesByNameUseCase viewInvUC
+@inject IViewInventoryByIdUseCase viewInvIDUC
+@inject IPurchaseInventoryUC purchaseUC
+@rendermode InteractiveServer
+@inject IJSRuntime jsRuntime
+
+
+<h3>Purchase Inventory</h3>
+<br />
+<EditForm id="purchase-form" Model="purchaseVM" OnValidSubmit="Purchase">
+    <DataAnnotationsValidator/>
+    <ValidationSummary/>
+    <div class="form-group">
+        <label for="po">Purchase Order #</label>
+        <InputText id="po"
+            class="form-control"
+            @bind-Value="purchaseVM.PONumber"/>
+    </div>
+    <br/>
+    <div class="card">
+        <div class="card-body">
+            <div class="form-group">
+                <AutoCompleteComponent Label="Inventory to purchase"
+                                       SearchFunction="SearchInventory"
+                                       OnItemSelected="HandleItemSelected" />
+                <br />
+                @if (purchaseVM.InventoryPrice > 0)
+                {
+                    <text>Price:</text>
+                    @purchaseVM.InventoryPrice.ToString("c")
+
+                }
+                <br />
+            </div>
+        </div>
+    </div>
+    <br />
+    <div class="form-group">
+        <label for="quantity">How many?</label>
+        <InputNumber id="quantity"
+                   class="form-control"
+                   @bind-Value="purchaseVM.QuantityToPurchose" />
+    </div>
+    <br />
+    <button type="submit" class="btn btn-primary">Purchase</button>
+</EditForm>
+
+
+
+@code {
+    private PurchaseVM purchaseVM = new PurchaseVM();
+
+    private Inventory? selectedInventory = null;
+
+    private async Task HandleItemSelected(ItemViewModel ivm)
+    {
+        selectedInventory = await viewInvIDUC.ExecuteAsync(ivm.Id);
+        purchaseVM.InventoryId = ivm.Id;
+        purchaseVM.InventoryPrice = (await viewInvIDUC.ExecuteAsync(ivm.Id)).Price;
+    }
+
+    private async Task<List<ItemViewModel>?> SearchInventory(string name)
+    {
+        var result = await viewInvUC.ExecuteAsync(name);
+        if (result == null) return null;
+
+        return result.Select(item => new ItemViewModel { Id = item.InventoryId, Name = item.InventoryName }).ToList();
+    }
+    private async Task Purchase()
+    {
+        await purchaseUC.ExecuteAsync(this.purchaseVM.PONumber, selectedInventory, purchaseVM.QuantityToPurchose, "bob");
+        this.purchaseVM = new PurchaseVM();
+        this.selectedInventory = null;
+    }
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        base.OnAfterRender(firstRender);
+
+        if (firstRender)
+        {
+            jsRuntime.InvokeVoidAsync("preventFormSubmission", "purchase-form");
+        }
+    }
+}

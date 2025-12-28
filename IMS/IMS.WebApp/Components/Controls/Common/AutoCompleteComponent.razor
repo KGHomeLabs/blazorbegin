@@ -1,0 +1,117 @@
+﻿
+<div>
+    <label for="search">@Label</label>
+    <input
+        type="text"
+        class="form-control"
+        @bind-value="userInput"
+        @bind-value:event="oninput"
+        @onkeyup="HandlekeyUp"/>
+</div>
+@if(searchResults != null)
+{
+    <div class="search-result">
+        <ul>
+            @{
+                int itemIndex = 0;
+                foreach(var item in searchResults)
+                {
+                    <li @key="item.Id"
+                        class="@(itemIndex == currentItemIndex? "selected":"")"
+                        @onclick="() => { HandleSelect(item); }">
+                        @item.Name
+                    </li>
+                    itemIndex++;
+                }
+            }
+        </ul>
+    </div>
+}
+
+@code {
+    [Parameter]
+    public string Label { get; set; } = string.Empty;
+
+    [Parameter]
+    public Func<string,Task<List<ItemViewModel>>>? SearchFunction { get; set; }
+    [Parameter]
+    public EventCallback<ItemViewModel> OnItemSelected { get; set; }
+
+    ItemViewModel? selectedItem = null;
+
+    private List<ItemViewModel> searchResults = null;
+
+    private void HandleSelect(ItemViewModel? ivm)
+    {
+        ClearHighLighting();
+        if(ivm !=null)
+        {
+            selectedItem = ivm;
+            this.userInput = ivm?.Name ?? string.Empty;
+            searchResults = null;
+
+            OnItemSelected.InvokeAsync(ivm);
+        }
+    }
+
+    private string _userInput;
+    public string userInput { 
+        get{ return _userInput; }
+        set
+        {
+            _userInput = value;
+            if(!string.IsNullOrWhiteSpace(_userInput) &&
+                SearchFunction !=null)
+            {
+                ViewItemsAsync();
+            }
+        }
+    }
+
+    private async Task ViewItemsAsync()
+    {
+        if (SearchFunction != null)
+        {
+            searchResults = await SearchFunction(_userInput);
+            StateHasChanged();
+        }
+    }
+
+    private void ClearHighLighting()
+    {
+        searchResults = null;
+        currentItem = null;
+        currentItemIndex = -1;
+    }
+
+    private ItemViewModel? currentItem =null;
+    private int currentItemIndex = -1;
+
+    private void HandlekeyUp(KeyboardEventArgs args)
+    {
+        if(searchResults!=null &&
+           (args.Code == "ArrowDown" || args.Code == "ArrowUp"))
+        {
+            if(args.Code == "ArrowDown" && currentItemIndex <searchResults.Count -1)
+            {
+                currentItem = searchResults[++currentItemIndex];
+            }
+
+            else if (args.Code == "ArrowUp")
+            {
+                if(currentItemIndex > 0)
+                {
+                    currentItem = searchResults[--currentItemIndex];
+                } else
+                {
+                    currentItem = null;
+                    currentItemIndex = -1;
+                }
+
+            }
+        } else if(args.Code == "Enter" || args.Code == "NumpadEnter")
+        {
+            HandleSelect(currentItem);
+        }
+    }
+}

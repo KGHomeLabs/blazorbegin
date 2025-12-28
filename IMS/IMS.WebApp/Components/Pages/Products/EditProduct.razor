@@ -1,0 +1,72 @@
+﻿@page "/products/edit/{productId:int}"
+@using IMS.CoreBusiness
+@using IMS.UseCases.Products.Interfaces
+
+@inject IEditProductUseCase EditProductUC
+@inject IViewProductByIdUseCase ViewProductUC
+@inject NavigationManager Navigation
+@rendermode InteractiveServer
+
+<h3>EditProduct</h3>
+<br />
+@if (product is not null)
+{
+    <EditForm Model="product" FormName="formProduct" OnValidSubmit="Save">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+        <div class="form-group">
+            <label for="name">Inventory Name</label>
+            <InputText id="name"
+                       @bind-Value="product.Name"
+                       class="form-control" />
+            <ValidationMessage For="() => product.Name" />
+        </div>
+        <div>
+            <label for="quantity">Quantity</label>
+            <InputNumber id"quantity"
+                         @bind-Value="product.Quantity"
+                         class="form-control" />
+
+        </div>
+        <div>
+            <label for="price">Price</label>
+            <InputNumber id="price"
+                         @bind-Value="product.Price"
+                         class="form-control" />
+        </div>
+        <div>
+            <label for="boundInventory">Inventory</label>
+            <ProductInventoryComponent Product="this.product"></ProductInventoryComponent>
+        </div>
+        <br />
+        <button type="submit" class="btn btn-primary">Save</button>
+        &nbsp;
+        <a class="btn btn-outline-primary" href="/products">Cancel</a>
+    </EditForm>
+}
+
+
+@code {
+    [Parameter]
+    public int productId { get; set; }
+
+    private Product? product;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        product = await ViewProductUC.ExecuteAsync(productId);
+        if (this.product is null)
+        {
+            Navigation.NotFound();
+        }
+    }
+
+    private async Task Save(EditContext args)
+    {
+        if (product != null)
+        {
+            await EditProductUC.ExecuteAsync(product);
+        }
+        Navigation.NavigateTo("/products");
+    }
+}

@@ -1,0 +1,86 @@
+﻿@page "/produce"
+@rendermode InteractiveServer
+@inject IJSRuntime jsRuntime
+@using IMS.CoreBusiness
+@using IMS.UseCases.Activeties.Interfaces
+@using IMS.UseCases.PluginInterfaces
+@using IMS.UseCases.Products.Interfaces
+@using IMS.WebApp.Components.Controls.Common
+@using IMS.WebApp.ViewModels
+
+
+@inject IViewProductsByNameUseCase viewProdNameUC
+@inject IViewProductByIdUseCase viewProdIdUC
+@inject IProduceProductUC produceProdUC
+
+<h3>Produce Product</h3>
+<EditForm id="produce-form" Model="produceVM" OnValidSubmit="Produce">
+    <DataAnnotationsValidator/>
+    <ValidationSummary/>
+    <div class="form-group">
+        <label for="po">Purchase Order #</label>
+        <InputText id="po"
+            class="form-control"
+                   @bind-Value="produceVM.ProductionNumber" />
+    </div>
+    <br/>
+    <div class="card">
+        <div class="card-body">
+            <div class="form-group">
+                <AutoCompleteComponent Label="Product to purchase"
+                                       SearchFunction="SearchProducts"
+                                       OnItemSelected="HandleItemSelected" />
+                <br />               
+            </div>
+        </div>
+    </div>
+    <br />
+    <div class="form-group">
+        <label for="quantity">How many?</label>
+        <InputNumber id="quantity"
+                   class="form-control"
+                     @bind-Value="produceVM.QuantityToProduce" />
+    </div>
+    <br />
+    <button type="submit" class="btn btn-primary">Produce</button>
+</EditForm>
+
+@code {
+
+    private ProduceVM produceVM = new ProduceVM();
+    private Product? selectedProduct;
+
+    private async Task HandleItemSelected(ItemViewModel ivm)
+    {
+        selectedProduct = await viewProdIdUC.ExecuteAsync(ivm.Id);
+        produceVM.ProductId = ivm.Id;
+        produceVM.Product = selectedProduct;
+    }
+
+    private async Task<List<ItemViewModel>?> SearchProducts(string name)
+    {
+        var result = await viewProdNameUC.ExecuteAsync(name);
+        if (result == null) return null;
+
+        return result.Select(item => new ItemViewModel { Id = item.Id, Name = item.Name }).ToList();
+    }
+    private async Task Produce()
+    {
+        await produceProdUC.ExecuteAsync(produceVM.ProductionNumber, 
+                selectedProduct,
+                produceVM.QuantityToProduce,
+                "bob");
+        produceVM = new ProduceVM();
+        selectedProduct = null;
+    }
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        base.OnAfterRender(firstRender);
+
+        if (firstRender)
+        {
+            jsRuntime.InvokeVoidAsync("preventFormSubmission", "produce-form");
+        }
+    }
+}

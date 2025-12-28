@@ -10,8 +10,8 @@
 </EditForm>
 
 @code {
-    [SupplyParameterFromForm]
-    private string? searchFilter { get; set; }
+  
+    private string searchFilter { get; set; } = String.Empty;
 
     [Parameter]
     public EventCallback<string> OnSearch { get; set; }
