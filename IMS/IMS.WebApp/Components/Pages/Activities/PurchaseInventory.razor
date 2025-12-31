@@ -5,6 +5,9 @@
 @using IMS.WebApp.Components.Controls.Common
 @using IMS.WebApp.ViewModels
 
+
+@attribute [Authorize]
+
 @inject IViewInventoriesByNameUseCase viewInvUC
 @inject IViewInventoryByIdUseCase viewInvIDUC
 @inject IPurchaseInventoryUC purchaseUC

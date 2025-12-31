@@ -2,6 +2,8 @@
 @using IMS.CoreBusiness
 @using IMS.UseCases.Inventories.Interfaces
 
+@attribute [Authorize]
+
 @inject IAddInventoryUseCase AddInventoryUseCase
 @inject NavigationManager Navigation
 

@@ -7,6 +7,8 @@
 @using IMS.WebApp.Components.Controls.Common
 @using IMS.WebApp.ViewModels
 
+@attribute [Authorize]
+
 @rendermode InteractiveServer
 @inject IJSRuntime jsRuntime
 @inject IViewProductsByNameUseCase viewProdNameUC

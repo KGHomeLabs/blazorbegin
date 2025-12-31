@@ -2,6 +2,8 @@
 @using IMS.CoreBusiness
 @using IMS.UseCases.Products.Interfaces
 
+@attribute [Authorize]
+
 @inject IEditProductUseCase EditProductUC
 @inject IViewProductByIdUseCase ViewProductUC
 @inject NavigationManager Navigation

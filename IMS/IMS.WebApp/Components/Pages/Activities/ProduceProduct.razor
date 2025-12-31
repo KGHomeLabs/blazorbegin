@@ -1,5 +1,8 @@
 ﻿@page "/produce"
 @rendermode InteractiveServer
+
+@attribute [Authorize]
+
 @inject IJSRuntime jsRuntime
 @using IMS.CoreBusiness
 @using IMS.UseCases.Activeties.Interfaces

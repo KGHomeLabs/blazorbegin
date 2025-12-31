@@ -10,6 +10,10 @@ using IMS.UseCases.Products.Interfaces;
 using IMS.UseCases.Reports;
 using IMS.WebApp.Components;
 using Microsoft.EntityFrameworkCore;
+using IMS.WebApp.Components.Account;
+using IMS.WebApp.Data;
+using Microsoft.AspNetCore.Components.Authorization;
+using Microsoft.AspNetCore.Identity;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddDbContextFactory<IMSContext>(options=>
@@ -17,6 +21,11 @@ builder.Services.AddDbContextFactory<IMSContext>(options=>
         options.UseSqlServer(builder.Configuration.GetConnectionString("Default"));
     }
 );
+builder.Services.AddDbContext<IMSIdentityContext>(options =>
+{
+    options.UseSqlServer(
+        builder.Configuration.GetConnectionString("IMSIdentityContext"));
+});
 // Add services to the container.
 builder.Services.AddRazorComponents()
                 .AddInteractiveServerComponents();
@@ -51,6 +60,30 @@ builder.Services.AddTransient<IProduceProductUC, ProduceProductUC>();
 builder.Services.AddTransient<ISellProductUC, SellProductUC>();
 builder.Services.AddTransient<ISearchInventoryUC, SearchInventoryUC>();
 builder.Services.AddTransient<ISearchProductUC, SearchProductUC>();
+
+builder.Services.AddCascadingAuthenticationState();
+
+builder.Services.AddScoped<IdentityRedirectManager>();
+
+builder.Services.AddScoped<AuthenticationStateProvider, IdentityRevalidatingAuthenticationStateProvider>();
+
+builder.Services.AddAuthentication(options =>
+    {
+        options.DefaultScheme = IdentityConstants.ApplicationScheme;
+        options.DefaultSignInScheme = IdentityConstants.ExternalScheme;
+    })
+    .AddIdentityCookies();
+
+builder.Services.AddIdentityCore<IdentityUser>(options =>
+    {
+        options.SignIn.RequireConfirmedAccount = true;
+        options.Stores.SchemaVersion = IdentitySchemaVersions.Version3;
+    })
+    .AddEntityFrameworkStores<IMSIdentityContext>()
+    .AddSignInManager()
+    .AddDefaultTokenProviders();
+
+builder.Services.AddSingleton<IEmailSender<IdentityUser>, IdentityNoOpEmailSender>();
 //build
 var app = builder.Build();
 
@@ -69,5 +102,7 @@ app.UseAntiforgery();
 app.MapStaticAssets();
 app.MapRazorComponents<App>()
    .AddInteractiveServerRenderMode();
+
+app.MapAdditionalIdentityEndpoints();;
 
 app.Run();
