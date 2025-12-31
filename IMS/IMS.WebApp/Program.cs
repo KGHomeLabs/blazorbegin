@@ -1,3 +1,4 @@
+using IMS.Plugin.EFCoreSQL;
 using IMS.Plugins.InMemory;
 using IMS.UseCases.Activeties;
 using IMS.UseCases.Activeties.Interfaces;
@@ -6,18 +7,33 @@ using IMS.UseCases.Inventories.Interfaces;
 using IMS.UseCases.PluginInterfaces;
 using IMS.UseCases.Products;
 using IMS.UseCases.Products.Interfaces;
+using IMS.UseCases.Reports;
 using IMS.WebApp.Components;
+using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
-
+builder.Services.AddDbContextFactory<IMSContext>(options=>
+    {
+        options.UseSqlServer(builder.Configuration.GetConnectionString("Default"));
+    }
+);
 // Add services to the container.
 builder.Services.AddRazorComponents()
                 .AddInteractiveServerComponents();
-//Repos
-builder.Services.AddSingleton<IInventoryRepository, InventoryRepository>();
-builder.Services.AddSingleton<IProductRepository, ProductRepository > ();
-builder.Services.AddSingleton<IInventoryTransactionRepository, InvTransactionRepository>();
-builder.Services.AddSingleton<IProductTransactionRepo, ProductTransactionRepository> ();
+if (builder.Environment.IsEnvironment("Testing"))
+{
+    //Repos
+    builder.Services.AddSingleton<IInventoryRepository, InventoryRepository>();
+    builder.Services.AddSingleton<IProductRepository, ProductRepository>();
+    builder.Services.AddSingleton<IInventoryTransactionRepository, InvTransactionRepository>();
+    builder.Services.AddSingleton<IProductTransactionRepo, ProductTransactionRepository>();
+} else
+{
+    builder.Services.AddTransient<IInventoryRepository, InventoryEFCoreRepo>();
+    builder.Services.AddTransient<IProductRepository, ProductEFCoreRepository>();
+    builder.Services.AddTransient<IInventoryTransactionRepository, InventoryTransEFCoreRepo>();
+    builder.Services.AddTransient<IProductTransactionRepo, ProductTransactionEFCoreRepo>();
+}
 //Inject all this architecture clutter
 builder.Services.AddTransient<IViewInventoriesByNameUseCase, ViewInventoriesByNameUseCase>();
 builder.Services.AddTransient<IAddInventoryUseCase, AddInventoryUseCase>();
@@ -33,6 +49,8 @@ builder.Services.AddTransient<IEditProductUseCase, EditProductUseCase>();
 builder.Services.AddTransient<IPurchaseInventoryUC, PurchaseInventoryUC>();
 builder.Services.AddTransient<IProduceProductUC, ProduceProductUC>();
 builder.Services.AddTransient<ISellProductUC, SellProductUC>();
+builder.Services.AddTransient<ISearchInventoryUC, SearchInventoryUC>();
+builder.Services.AddTransient<ISearchProductUC, SearchProductUC>();
 //build
 var app = builder.Build();
 

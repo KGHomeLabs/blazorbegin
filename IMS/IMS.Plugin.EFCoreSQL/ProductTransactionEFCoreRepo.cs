@@ -1,31 +1,38 @@
 ﻿using IMS.CoreBusiness;
 using IMS.UseCases.PluginInterfaces;
-using System.Transactions;
+using Microsoft.EntityFrameworkCore;
+using System;
+using System.Collections.Generic;
+using System.Text;
 
-namespace IMS.Plugins.InMemory
+namespace IMS.Plugin.EFCoreSQL
 {
-    public class ProductTransactionRepository : IProductTransactionRepo
+    public class ProductTransactionEFCoreRepo :IProductTransactionRepo
     {
+        private readonly IDbContextFactory<IMSContext> contextFactory;
+
         private readonly IProductRepository productRepo;
         private readonly IInventoryTransactionRepository invTransactionRepo;
         private readonly IInventoryRepository invRepo;
-        private List<ProductTransaction> _productTransactions =  new List<ProductTransaction>();
 
-        public ProductTransactionRepository(IProductRepository productRepo, IInventoryTransactionRepository invTransactionRepo, IInventoryRepository invRepo)
+        public ProductTransactionEFCoreRepo(
+            IDbContextFactory<IMSContext> contextFactory,
+            IProductRepository productRepo, 
+            IInventoryTransactionRepository invTransactionRepo, 
+            IInventoryRepository invRepo)
         {
+            this.contextFactory = contextFactory;
             this.productRepo = productRepo;
             this.invTransactionRepo = invTransactionRepo;
             this.invRepo = invRepo;
         }
 
-     
-
         public async Task<IEnumerable<ProductTransaction>> GetProductTransactions(string productName, DateTime? dateFrom, DateTime? dateTo, ProductTransactionType? transactionType)
         {
-            var products = (await productRepo.GetProductsByNameAsync(string.Empty)).ToList();
+            using var db = contextFactory.CreateDbContext();           
 
-            var query = from it in _productTransactions
-                        join inv in products on it.ProductId equals inv.Id
+            var query = from it in db.ProductTransactions
+                        join inv in db.Productes on it.ProductId equals inv.Id
                         where (string.IsNullOrWhiteSpace(productName)
                                 ||
                                 inv.Name.ToLower().IndexOf(productName.ToLower()) >= 0)
@@ -35,34 +42,23 @@ namespace IMS.Plugins.InMemory
                                 (!dateTo.HasValue || it.TransDate <= dateTo.Value.Date)
                                 &&
                                 (!transactionType.HasValue || it.ActivityType == transactionType)
-                        select new ProductTransaction
-                        {
-                            Product = inv,
-                            ProductTransactionId = it.ProductTransactionId,
-                            ProductionNumber = it.ProductionNumber,
-                            SONumber = it.SONumber,
-                            ProductId = it.ProductId,
-                            QuantityBefore = it.QuantityBefore,
-                            ActivityType = it.ActivityType,
-                            QuantityAfter = it.QuantityAfter,
-                            TransDate = it.TransDate,
-                            DoneBy = it.DoneBy,
-                            UnitPrice = it.UnitPrice
-                        };
-
-            return query;
+                        select it;
+            var result = await query.Include(item => item.Product).ToListAsync();
+            return result;
         }
 
         public async Task ProduceAsync(string productionNumber, Product product, int quantity, string doneBy)
         {
+            using var db = contextFactory.CreateDbContext();
+
             var prod = await this.productRepo.GetProductByIdAsync(product.Id);
-            
+
             //add inventory transaction
             if (prod != null)
             {
-                foreach(var pi in prod.ProductInventories)
+                foreach (var pi in prod.ProductInventories)
                 {
-                    if(pi.Inventory != null)
+                    if (pi.Inventory != null)
                     {
                         this.invTransactionRepo.ProduceAsync(productionNumber,
                             pi.Inventory,
@@ -72,9 +68,9 @@ namespace IMS.Plugins.InMemory
                         var inv = await invRepo.GetInventoryByIdAsync(pi.InventoryId);
                         inv.Quantity -= pi.InventoryQuantity * quantity;
                         await invRepo.UpdateInventoryAsync(inv);
-                            
+
                     }
-                    
+
                 }
             }
             //add product transaction
@@ -88,26 +84,26 @@ namespace IMS.Plugins.InMemory
                 DoneBy = doneBy
 
             };
-            _productTransactions.Add(newProductTransaction);
+            db.ProductTransactions?.Add(newProductTransaction);
+            await db.SaveChangesAsync();
         }
 
-        public Task SellProductAsync(string salesOrderNumber, Product product, int quantity,double unitPrice, string doneBy)
+        public async Task SellProductAsync(string salesOrderNumber, Product product, int quantity, double unitPrice, string doneBy)
         {
+            using var db = contextFactory.CreateDbContext();
+
             var newTransaction = new ProductTransaction();
             newTransaction.ActivityType = ProductTransactionType.SellProduct;
             newTransaction.SONumber = salesOrderNumber;
             newTransaction.ProductId = product.Id;
             newTransaction.QuantityBefore = product.Quantity;
-            newTransaction.QuantityAfter = product.Quantity-quantity;
+            newTransaction.QuantityAfter = product.Quantity - quantity;
             newTransaction.TransDate = DateTime.Now;
             newTransaction.DoneBy = doneBy;
             newTransaction.UnitPrice = unitPrice;
 
-
-            _productTransactions.Add(newTransaction);
-
-            return Task.CompletedTask;
+            db.ProductTransactions?.Add(newTransaction);
+            await db.SaveChangesAsync();     
         }
-
     }
 }
